@@ -16,7 +16,7 @@ jobs:
     - name: Set up Kubernetes
       uses: azure/setup-kubectl@v2
       with:
-        version: v1.26.0  # Use a more recent version of kubectl
+        version: v1.26.0 
 
     - name: Set up Kustomize
       run: |
