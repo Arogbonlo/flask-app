@@ -11,22 +11,20 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up Kubernetes
       uses: azure/setup-kubectl@v1
       with:
-        version: v1.21.0
+        version: v1.26.0  # Use a more recent version of kubectl
 
     - name: Set up Kustomize
       run: |
-        curl -s "https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest" \
-        | grep browser_download_url \
-        | grep linux \
-        | cut -d '"' -f 4 \
-        | xargs curl -O -L
-        chmod u+x kustomize_v*_linux_amd64
-        mv kustomize_v*_linux_amd64 /usr/local/bin/kustomize
+        KUSTOMIZE_VERSION=$(curl -s "https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest" | grep tag_name | cut -d '"' -f 4)
+        curl -LO "https://github.com/kubernetes-sigs/kustomize/releases/download/${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION#v}_linux_amd64.tar.gz"
+        tar xzf "kustomize_${KUSTOMIZE_VERSION#v}_linux_amd64.tar.gz"
+        sudo mv kustomize /usr/local/bin/
+        kustomize version
 
     - name: Apply manifests
       run: kubectl apply -k .

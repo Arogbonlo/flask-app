@@ -8,7 +8,7 @@ spec:
     namespace: default
     server: https://kubernetes.default.svc
   source:
-    repoURL: https://github.com/Arogbonlo/Single-node
+    repoURL: https://github.com/Arogbonlo/flask-app.git
     path: apps/flask-app
     targetRevision: HEAD
   project: default
