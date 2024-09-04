@@ -55,7 +55,7 @@ jobs:
 
       - name: Configure Argo CD Application
         run: |
-          argocd login --core
+          argocd login localhost:8080 --username admin --password ${{ secrets.ARGOCD_PASSWORD }}
           argocd app create flask-app \
             --repo https://github.com/Arogbonlo/flask-app \
             --path apps \
