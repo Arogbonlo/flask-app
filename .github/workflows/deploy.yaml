@@ -40,17 +40,16 @@ jobs:
 
       - name: Check Argo CD Installation
         run: |
-         kubectl get pods -n argocd || exit 1
-         kubectl get configmap -n argocd || exit 1
+          kubectl get pods -n argocd || exit 1
+          kubectl get configmap -n argocd || exit 1
 
-     - name: Reapply Argo CD Manifests
-       run: |
-         kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
- 
+      - name: Reapply Argo CD Manifests
+        run: |
+          kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
       - name: Deploy Application to Minikube
         run: |
-          kubectl create namespace argocd
+          kubectl create namespace argocd || true
           kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
           kubectl wait --for=condition=available --timeout=600s deployment/argocd-server -n argocd
           kubectl apply -f apps/flask-app/deployment.yaml
