@@ -1,0 +1,32 @@
+name: Deploy to Kubernetes
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Kubernetes
+      uses: azure/setup-kubectl@v1
+      with:
+        version: v1.21.0
+
+    - name: Set up Kustomize
+      run: |
+        curl -s "https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest" \
+        | grep browser_download_url \
+        | grep linux \
+        | cut -d '"' -f 4 \
+        | xargs curl -O -L
+        chmod u+x kustomize_v*_linux_amd64
+        mv kustomize_v*_linux_amd64 /usr/local/bin/kustomize
+
+    - name: Apply manifests
+      run: kubectl apply -k .

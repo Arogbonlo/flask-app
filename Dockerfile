@@ -1,13 +1,14 @@
-# Dockerfile
-FROM node:14
+FROM python:3.9-slim
 
-WORKDIR /app
+# Set the working directory
+WORKDIR /usr/src/app
 
-COPY package*.json ./
-RUN npm install
+# Install dependencies
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy the application code
 COPY . .
 
-EXPOSE 3000
-
-CMD ["npm", "start"]
+# Run the application
+CMD ["python", "app.py"]

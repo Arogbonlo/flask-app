@@ -1,18 +1,17 @@
-# argo-cd-app.yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: my-app
+  name: flask-app
   namespace: argocd
 spec:
-  project: default
+  destination:
+    namespace: default
+    server: https://kubernetes.default.svc
   source:
     repoURL: https://github.com/Arogbonlo/Single-node
+    path: apps/flask-app
     targetRevision: HEAD
-    path: 'k8s'
-  destination:
-    server: 'https://kubernetes.default.svc'
-    namespace: default
+  project: default
   syncPolicy:
     automated:
       prune: true
