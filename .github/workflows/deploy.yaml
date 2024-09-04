@@ -43,8 +43,8 @@ jobs:
           kubectl create namespace argocd
           kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
           kubectl wait --for=condition=available --timeout=600s deployment/argocd-server -n argocd
-          kubectl apply -f ./k8s/app-deployment.yaml
-          kubectl apply -f ./k8s/traefik-ingress.yaml
+          kubectl apply -f apps/flask-app/deployment.yaml
+          kubectl apply -f apps/flask-app/ingress.yaml
 
       - name: Configure Argo CD Application
         run: |
