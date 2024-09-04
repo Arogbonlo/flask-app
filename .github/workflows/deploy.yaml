@@ -45,13 +45,20 @@ jobs:
         run: |
           kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
-      - name: Wait for Argo CD to be Ready
-        run: kubectl wait --for=condition=available --timeout=600s deployment/argocd-server -n argocd
-
-      - name: Deploy Application to Minikube
+      - name: Wait for Argo CD Components to be Ready
         run: |
-          kubectl apply -f apps/flask-app/deployment.yaml
-          kubectl apply -f apps/flask-app/ingress.yaml
+          kubectl wait --for=condition=available --timeout=600s deployment/argocd-server -n argocd
+          kubectl wait --for=condition=available --timeout=600s deployment/argocd-repo-server -n argocd
+          kubectl wait --for=condition=available --timeout=600s deployment/argocd-dex-server -n argocd
+          kubectl wait --for=condition=available --timeout=600s deployment/argocd-redis -n argocd
+
+      - name: Check Argo CD Service
+        run: kubectl get svc -n argocd
+
+      - name: Port Forward Argo CD
+        run: |
+          kubectl port-forward svc/argocd-server -n argocd 8080:443 &
+          sleep 10
 
       - name: Configure Argo CD Application
         run: |
