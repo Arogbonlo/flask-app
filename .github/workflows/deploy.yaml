@@ -4,62 +4,62 @@ on:
   push:
     branches:
       - main
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-    - name: Log in to Docker Hub
-      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-    - name: Build Docker image
-      run: docker build -t arogbonlo/flask-app:latest .
+      - name: Build Docker image
+        run: docker build -t arogbonlo/flask-app:latest .
 
-    - name: Push Docker image
-      run: docker push arogbonlo/flask-app:latest
+      - name: Push Docker image
+        run: docker push arogbonlo/flask-app:latest
 
-   - name: Install Minikube
-     run: |
-       curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-       sudo install minikube-linux-amd64 /usr/local/bin/minikube
+      - name: Install Minikube
+        run: |
+          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          sudo install minikube-linux-amd64 /usr/local/bin/minikube
 
-   - name: Start Minikube
-     run: minikube start --driver=docker --kubernetes-version=v1.26.0
+      - name: Start Minikube
+        run: minikube start --driver=docker --kubernetes-version=v1.26.0
 
+      - name: Install Argo CD CLI
+        run: |
+          curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/download/v2.9.2/argocd-linux-amd64
+          chmod +x /usr/local/bin/argocd
 
-    - name: Install Argo CD CLI
-      run: |
-        curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/download/v2.9.2/argocd-linux-amd64
-        chmod +x /usr/local/bin/argocd
+      - name: Deploy Application to Minikube
+        run: |
+          kubectl create namespace argocd
+          kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+          kubectl wait --for=condition=available --timeout=600s deployment/argocd-server -n argocd
+          kubectl apply -f ./k8s/app-deployment.yaml
+          kubectl apply -f ./k8s/traefik-ingress.yaml
 
-    - name: Deploy Application to Minikube
-      run: |
-        kubectl create namespace argocd
-        kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-        kubectl wait --for=condition=available --timeout=600s deployment/argocd-server -n argocd
-        kubectl apply -f ./k8s/app-deployment.yaml
-        kubectl apply -f ./k8s/traefik-ingress.yaml
+      - name: Configure Argo CD Application
+        run: |
+          argocd login --core
+          argocd app create flask-app \
+            --repo https://github.com/Arogbonlo/flask-app \
+            --path k8s \
+            --dest-server https://kubernetes.default.svc \
+            --dest-namespace default \
+            --sync-policy automated
 
-    - name: Configure Argo CD Application
-      run: |
-        argocd login --core
-        argocd app create flask-app \
-          --repo https://github.com/Arogbonlo/flask-app \
-          --path k8s \
-          --dest-server https://kubernetes.default.svc \
-          --dest-namespace default \
-          --sync-policy automated
+      - name: Sync Argo CD Application
+        run: argocd app sync flask-app
 
-    - name: Sync Argo CD Application
-      run: argocd app sync flask-app
-
-    - name: Install Grafana
-      run: |
-        kubectl apply -f https://raw.githubusercontent.com/grafana/helm-charts/main/charts/grafana/templates/all.yaml
-        kubectl expose deployment grafana --type=NodePort --name=grafana-service --namespace=default
+      - name: Install Grafana
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/grafana/helm-charts/main/charts/grafana/templates/all.yaml
+          kubectl expose deployment grafana --type=NodePort --name=grafana-service --namespace=default
