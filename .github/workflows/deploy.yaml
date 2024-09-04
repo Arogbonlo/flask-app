@@ -38,20 +38,18 @@ jobs:
           curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/download/v2.9.2/argocd-linux-amd64
           chmod +x /usr/local/bin/argocd
 
-      - name: Check Argo CD Installation
-        run: |
-          kubectl get pods -n argocd || exit 1
-          kubectl get configmap -n argocd || exit 1
+      - name: Create Argo CD Namespace
+        run: kubectl create namespace argocd || true
 
-      - name: Reapply Argo CD Manifests
+      - name: Install Argo CD
         run: |
           kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+      - name: Wait for Argo CD to be Ready
+        run: kubectl wait --for=condition=available --timeout=600s deployment/argocd-server -n argocd
 
       - name: Deploy Application to Minikube
         run: |
-          kubectl create namespace argocd || true
-          kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-          kubectl wait --for=condition=available --timeout=600s deployment/argocd-server -n argocd
           kubectl apply -f apps/flask-app/deployment.yaml
           kubectl apply -f apps/flask-app/ingress.yaml
 
@@ -60,7 +58,7 @@ jobs:
           argocd login --core
           argocd app create flask-app \
             --repo https://github.com/Arogbonlo/flask-app \
-            --path k8s \
+            --path apps \
             --dest-server https://kubernetes.default.svc \
             --dest-namespace default \
             --sync-policy automated
