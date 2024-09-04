@@ -14,10 +14,10 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Set up Kubernetes
-      uses: azure/setup-kubectl@v1
+      uses: azure/setup-kubectl@v2
       with:
-        version: v1.26.0  
-        
+        version: v1.26.0  # Use a more recent version of kubectl
+
     - name: Set up Kustomize
       run: |
         KUSTOMIZE_VERSION=$(curl -s "https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest" | grep tag_name | cut -d '"' -f 4)
