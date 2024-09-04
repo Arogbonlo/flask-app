@@ -16,13 +16,14 @@ jobs:
     - name: Set up Kubernetes
       uses: azure/setup-kubectl@v1
       with:
-        version: v1.26.0  # Use a more recent version of kubectl
-
+        version: v1.26.0  
+        
     - name: Set up Kustomize
       run: |
         KUSTOMIZE_VERSION=$(curl -s "https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest" | grep tag_name | cut -d '"' -f 4)
-        curl -LO "https://github.com/kubernetes-sigs/kustomize/releases/download/${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION#v}_linux_amd64.tar.gz"
-        tar xzf "kustomize_${KUSTOMIZE_VERSION#v}_linux_amd64.tar.gz"
+        KUSTOMIZE_BIN="kustomize_${KUSTOMIZE_VERSION#v}_linux_amd64"
+        curl -LO "https://github.com/kubernetes-sigs/kustomize/releases/download/${KUSTOMIZE_VERSION}/${KUSTOMIZE_BIN}.tar.gz"
+        tar xzf "${KUSTOMIZE_BIN}.tar.gz"
         sudo mv kustomize /usr/local/bin/
         kustomize version
 
