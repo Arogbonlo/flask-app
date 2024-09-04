@@ -25,12 +25,14 @@ jobs:
     - name: Push Docker image
       run: docker push arogbonlo/flask-app:latest
 
-    - name: Set up Minikube
-      uses: manusa/actions-setup-minikube@v2.11
-      with:
-        minikube-version: 'latest'
-        kubernetes-version: 'v1.26.0'
-        driver: docker
+   - name: Install Minikube
+     run: |
+       curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+       sudo install minikube-linux-amd64 /usr/local/bin/minikube
+
+   - name: Start Minikube
+     run: minikube start --driver=docker --kubernetes-version=v1.26.0
+
 
     - name: Install Argo CD CLI
       run: |
