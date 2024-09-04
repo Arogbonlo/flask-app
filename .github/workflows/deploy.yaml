@@ -17,8 +17,8 @@ jobs:
 
     - name: Build and Push Docker Image
       run: |
-        docker build -t .
-        docker push 
+        docker build -t arogbonlo/flask-app:latest .
+        docker push arogbonlo/flask-app:latest
     
   deploy:
     runs-on: ubuntu-latest
