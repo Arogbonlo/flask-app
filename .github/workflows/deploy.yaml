@@ -60,19 +60,6 @@ jobs:
           kubectl port-forward svc/argocd-server -n argocd 8080:443 &
           sleep 10
 
-      - name: Configure Argo CD Application
-        run: |
-          argocd login localhost:8080 --username admin --password ${{ secrets.ARGOCD_PASSWORD }} --insecure
-          argocd app create flask-app \
-            --repo https://github.com/Arogbonlo/flask-app \
-            --path apps \
-            --dest-server https://kubernetes.default.svc \
-            --dest-namespace default \
-            --sync-policy automated
-
-      - name: Sync Argo CD Application
-        run: argocd app sync flask-app
-
       - name: Install Grafana
         run: |
           kubectl apply -f https://raw.githubusercontent.com/grafana/helm-charts/main/charts/grafana/templates/all.yaml
