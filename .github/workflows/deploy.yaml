@@ -60,7 +60,16 @@ jobs:
           kubectl port-forward svc/argocd-server -n argocd 8080:443 &
           sleep 10
 
+      - name: Install Helm
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+      - name: Add Grafana Helm Repository
+        run: helm repo add grafana https://grafana.github.io/helm-charts
+
+      - name: Update Helm Repositories
+        run: helm repo update
+
       - name: Install Grafana
         run: |
-          kubectl apply -f https://raw.githubusercontent.com/grafana/helm-charts/main/charts/grafana/templates/all.yaml
-          kubectl expose deployment grafana --type=NodePort --name=grafana-service --namespace=default
+          helm install grafana grafana/grafana --namespace default --create-namespace
